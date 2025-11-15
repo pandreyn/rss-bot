@@ -1,0 +1,20 @@
+[package]
+name = "rss-bot"
+version = "0.1.0"
+edition = "2021"
+
+authors = ["Andrey Petkevich <pandreyn@gmail.com>"]
+repository = "https://github.com/pandreyn/rss-bot"
+
+[dependencies]
+tokio = { version = "1", features = ["rt-multi-thread", "macros", "signal"] }
+reqwest = { version = "0.11", features = ["json", "gzip", "rustls-tls"] }
+feed-rs = "1.3"
+teloxide = { version = "0.12", default-features = false, features = ["rustls", "macros"] }
+serde = { version = "1", features = ["derive"] }
+serde_json = "1"
+anyhow = "1"
+thiserror = "1"
+chrono = { version = "0.4", features = ["serde"] }
+sha1 = "0.10"
+once_cell = "1" 
