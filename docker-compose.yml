@@ -1,0 +1,23 @@
+services:
+  rss-bot:
+    image: rss-bot:latest
+    build: .
+    restart: no
+    env_file: .env
+    volumes:
+      - ./data:/app/data
+    logging:
+      driver: json-file
+      options:
+        max-size: "10m"
+        max-file: "5"
+    environment:
+      # Optional: control log format and verbosity
+      - RUST_LOG=rss_bot=info,reqwest=warn
+      # Uncomment for JSON logs (for Loki/ELK/etc)
+      # - RUST_LOG_FORMAT=json
+    healthcheck:
+      test: ["CMD", "sh", "-c", "test -s /app/state.json || exit 1"]
+      interval: 30s
+      timeout: 5s
+      retries: 3
