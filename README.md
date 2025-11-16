@@ -1,5 +1,7 @@
 # RSS-to-Telegram Bot
 
+[![Build & Push to Docker Hub (on push to main)](https://github.com/pandreyn/rss-bot/actions/workflows/docker-publish.yml/badge.svg?branch=main)](https://github.com/pandreyn/rss-bot/actions/workflows/docker-publish.yml)
+
 ## Description
 
 This app is a **Rust-based RSS-to-Telegram bot**. It monitors multiple RSS/Atom feeds and automatically forwards new entries to a specified Telegram chat. Key features include:
