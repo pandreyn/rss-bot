@@ -202,14 +202,14 @@ fn dequote(s: &str) -> &str {
 
 impl Config {
     fn from_env() -> Result<Self> {
-        let token = env::var("TELEGRAM_TOKEN")
+        let token = env::var("RSSBOT_TELEGRAM_TOKEN")
             .context("TELEGRAM_TOKEN env var is required")?;
-        let chat_id: i64 = env::var("TELEGRAM_CHAT_ID")
+        let chat_id: i64 = env::var("RSSBOT_TELEGRAM_CHAT_ID")
             .context("TELEGRAM_CHAT_ID env var is required")?
             .parse()
             .context("TELEGRAM_CHAT_ID must be a valid i64")?;
 
-        let feeds_raw = env::var("FEEDS").context("FEEDS env var is required")?;
+        let feeds_raw = env::var("RSSBOT_FEEDS").context("FEEDS env var is required")?;
         let mut feeds = Vec::new();
         for raw in feeds_raw.split(|c: char| c == ',' || c == '\n' || c == ';' || c.is_whitespace())
         {
@@ -229,17 +229,17 @@ impl Config {
             anyhow::bail!("FEEDS must contain at least one valid absolute URL");
         }
 
-        let dedup_limit: usize = env::var("DEDUP_LIMIT")
+        let dedup_limit: usize = env::var("RSSBOT_DEDUP_LIMIT")
             .ok()
             .and_then(|v| v.parse().ok())
             .unwrap_or(200);
 
-        let poll_every_minutes: u64 = env::var("POLL_EVERY_MINUTES")
+        let poll_every_minutes: u64 = env::var("RSSBOT_POLL_EVERY_MINUTES")
             .ok()
             .and_then(|v| v.parse().ok())
             .unwrap_or(5);
 
-        let state_file = env::var("STATE_FILE")
+        let state_file = env::var("RSSBOT_STATE_FILE")
             .map(PathBuf::from)
             .unwrap_or_else(|_| PathBuf::from("state.json"));
 
@@ -349,7 +349,7 @@ async fn run_once(
 async fn main() -> Result<()> {
     // --- Logging ---
     // Human logs by default; set RUST_LOG_FORMAT=json for JSON lines.
-    let json = env::var("RUST_LOG_FORMAT").ok().as_deref() == Some("json");
+    let json = env::var("RSSBOT_RUST_LOG_FORMAT").ok().as_deref() == Some("json");
     let filter = EnvFilter::try_from_default_env().unwrap_or_else(|_| EnvFilter::new("info"));
     if json {
         fmt().with_env_filter(filter).json().with_target(false).init();
