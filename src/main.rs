@@ -264,10 +264,11 @@ async fn process_feed(
     state_path: &Path,
     feed_url: &Url,
     dedup_limit: usize,
-) -> Result<usize> {
+) -> Result<(usize, String)> {
     let feed_opt = fetch_feed(client, feed_url).await?;
+    // If not modified or no feed, return (0, url) so caller still has a name
     let Some(feed) = feed_opt else {
-        return Ok(0);
+        return Ok((0, feed_url.as_str().to_string()));
     };
 
     let feed_tag = feed
@@ -304,7 +305,7 @@ async fn process_feed(
 
         time::sleep(Duration::from_millis(100)).await;
     }
-    Ok(sent_count)
+    Ok((sent_count, feed_tag))
 }
 
 async fn run_once(
@@ -318,18 +319,28 @@ async fn run_once(
 ) -> Result<()> {
     let started = std::time::Instant::now();
     let mut total = 0usize;
+    let mut per_feed: Vec<String> = Vec::new();
 
     for url in feeds {
         state.ensure_feed(url);
+
         match process_feed(client, bot, chat_id, state, state_path, url, dedup_limit).await {
-            Ok(n) => total += n,
+            Ok((n, feed_name)) => {
+                total += n;
+                per_feed.push(format!("{}:{}", feed_name, n));
+            }
             Err(e) => error!(feed = %url, error = %e, "feed error"),
         }
-        // Space between feeds to be polite to servers
+
         time::sleep(Duration::from_millis(500)).await;
     }
 
-    info!(sent = total, took = ?started.elapsed(), "poll cycle done");
+    info!(
+        sent = total,
+        took = ?started.elapsed(),
+        breakdown = %per_feed.join(", "),
+        "poll cycle done"
+    );
     Ok(())
 }
 
