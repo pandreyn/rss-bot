@@ -80,7 +80,7 @@ docker-compose up -d
 services:
   rss-bot:
     image: pandreyn/rss-bot:latest
-    restart: unless-stopped
+    restart: unless-stopped     # for debuginng it can be set to "no"
     env_file: .env
     volumes:
       - ./data:/app/data
