@@ -53,6 +53,11 @@ Place `main.rs` and `docker-compose.yml` in the same directory. Then run:
 docker-compose build
 docker-compose up
 ```
+or use following command to run as a daemon:
+
+```sh
+docker-compose up -d
+```
 
 ### 4. Data Persistence
 
