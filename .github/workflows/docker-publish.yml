@@ -1,10 +1,9 @@
 name: Build & Push to Docker Hub (on push to main)
 
 on:
-  push:
-    branches: [ "main" ]
   pull_request:
-    branches: [ "main" ]
+    types: [closed]   # fires when a PR is closed (either merged or just closed)
+    branches: [ "main" ]          # PR target branch
 
 jobs:
   build-and-push:
