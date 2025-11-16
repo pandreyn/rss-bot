@@ -345,7 +345,6 @@ async fn run_once(
 }
 
 /// ------------------------- Main -------------------------
-
 #[tokio::main]
 async fn main() -> Result<()> {
     // --- Logging ---
