@@ -3,8 +3,8 @@ name: Build & Push to Docker Hub (on push to main)
 on:
   push:
     branches: [ "main" ]
-    # Optionally restrict to changes that affect the image:
-    # paths: [ "Dockerfile", "**/*.rs", "Cargo.*", "docker-compose.yml" ]
+  pull_request:
+    branches: [ "main" ]
 
 jobs:
   build-and-push:
