@@ -37,12 +37,12 @@ This app is a **Rust-based RSS-to-Telegram bot**. It monitors multiple RSS/Atom 
 Create a `.env` file in your project directory:
 
 ```ini
-TELEGRAM_TOKEN=your_bot_token_here
-TELEGRAM_CHAT_ID=your_chat_id_here
-FEEDS=https://example.com/feed1.xml,https://example.com/feed2.xml
-DEDUP_LIMIT=200
-POLL_EVERY_MINUTES=5
-STATE_FILE=/app/state.json
+RSSBOT_TELEGRAM_TOKEN=your_bot_token_here
+RSSBOT_TELEGRAM_CHAT_ID=your_chat_id_here
+RSSBOT_FEEDS=https://example.com/feed1.xml,https://example.com/feed2.xml
+RSSBOT_DEDUP_LIMIT=200
+RSSBOT_POLL_EVERY_MINUTES=5
+RSSBOT_STATE_FILE=state.json
 ```
 
 ### 3. Build & Run
@@ -86,9 +86,9 @@ services:
         max-file: "5"
     environment:
       # Optional: control log format and verbosity
-      - RUST_LOG=rss_bot=info,reqwest=warn
+      - RSSBOT_RUST_LOG=rss_bot=info,reqwest=warn
       # Uncomment for JSON logs (for Loki/ELK/etc)
-      # - RUST_LOG_FORMAT=json
+      # - RSSBOT_RUST_LOG_FORMAT=json
     healthcheck:
       test: ["CMD", "sh", "-c", "test -s /app/state.json || exit 1"]
       interval: 30s
