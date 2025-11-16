@@ -14,7 +14,7 @@ jobs:
       packages: read
 
     env:
-      IMAGE_NAME: your-dockerhub-namespace/your-repo
+      IMAGE_NAME: pandreyn/rss-bot
       DOCKER_BUILDKIT: 1
 
     steps:
