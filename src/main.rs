@@ -203,13 +203,13 @@ fn dequote(s: &str) -> &str {
 impl Config {
     fn from_env() -> Result<Self> {
         let token = env::var("RSSBOT_TELEGRAM_TOKEN")
-            .context("TELEGRAM_TOKEN env var is required")?;
+            .context("RSSBOT_TELEGRAM_TOKEN env var is required")?;
         let chat_id: i64 = env::var("RSSBOT_TELEGRAM_CHAT_ID")
-            .context("TELEGRAM_CHAT_ID env var is required")?
+            .context("RSSBOT_TELEGRAM_CHAT_ID env var is required")?
             .parse()
-            .context("TELEGRAM_CHAT_ID must be a valid i64")?;
+            .context("RSSBOT_TELEGRAM_CHAT_ID must be a valid i64")?;
 
-        let feeds_raw = env::var("RSSBOT_FEEDS").context("FEEDS env var is required")?;
+        let feeds_raw = env::var("RSSBOT_FEEDS").context("RSSBOT_FEEDS env var is required")?;
         let mut feeds = Vec::new();
         for raw in feeds_raw.split(|c: char| c == ',' || c == '\n' || c == ';' || c.is_whitespace())
         {
@@ -218,15 +218,15 @@ impl Config {
                 continue;
             }
             let url = Url::parse(cleaned)
-                .with_context(|| format!("Invalid URL in FEEDS: {:?}", cleaned))?;
+                .with_context(|| format!("Invalid URL in RSSBOT_FEEDS: {:?}", cleaned))?;
             match url.scheme() {
                 "http" | "https" => {}
-                other => anyhow::bail!("Unsupported URL scheme {:?} in FEEDS: {:?}", other, cleaned),
+                other => anyhow::bail!("Unsupported URL scheme {:?} in RSSBOT_FEEDS: {:?}", other, cleaned),
             }
             feeds.push(url);
         }
         if feeds.is_empty() {
-            anyhow::bail!("FEEDS must contain at least one valid absolute URL");
+            anyhow::bail!("RSSBOT_FEEDS must contain at least one valid absolute URL");
         }
 
         let dedup_limit: usize = env::var("RSSBOT_DEDUP_LIMIT")
@@ -358,7 +358,10 @@ async fn main() -> Result<()> {
     }
 
     // --- Config ---
-    let cfg = Config::from_env()?;
+    let cfg = Config::from_env().map_err(|e| {
+        error!("Config error: {:?}", e);
+        e
+    })?;
     info!(
         feeds = cfg.feeds.len(),
         dedup_limit = cfg.dedup_limit,

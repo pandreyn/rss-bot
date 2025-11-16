@@ -39,9 +39,11 @@ jobs:
         with:
           images: ${{ env.IMAGE_NAME }}
           tags: |
-            type=ref,event=branch
-            type=sha
             type=raw,value=latest
+#          tags: |
+#            type=ref,event=branch
+#            type=sha
+#            type=raw,value=latest
 
       - name: Build & push (multi-arch)
         uses: docker/build-push-action@v6
