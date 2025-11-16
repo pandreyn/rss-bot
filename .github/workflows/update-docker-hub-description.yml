@@ -1,31 +1,40 @@
-name: Update Docker Hub Description
+name: Update Docker Hub description (on PR merge)
 
 on:
   pull_request:
     types: [closed]
+    branches: [ "main" ]         # PRs targeting main
+    # Optional: only run if README changed in the PR
+    paths:
+      - "README.md"
+
+concurrency:
+  group: dockerhub-desc-${{ github.ref }}
+  cancel-in-progress: false
 
 jobs:
   update-description:
     if: github.event.pull_request.merged == true
     runs-on: ubuntu-latest
 
-    env:
-      IMAGE_NAME: pandreyn/rss-bot
+    permissions:
+      contents: read   # checkout
 
     steps:
-      - name: Checkout code
+      - name: Checkout repository
         uses: actions/checkout@v4
+        with:
+          # Ensure we read the merged branch state if needed
+          ref: ${{ github.event.pull_request.base.ref }}
 
-      - name: Read README.md
-        id: readme
-        run: |
-          echo "readme<<EOF" >> $GITHUB_OUTPUT
-          cat README.md >> $GITHUB_OUTPUT
-          echo "EOF" >> $GITHUB_OUTPUT
-
-      - name: Update Docker Hub description
+      - name: Update Docker Hub description from README.md
         uses: peter-evans/dockerhub-description@v3
         with:
           username: ${{ secrets.DOCKERHUB_USERNAME }}
           password: ${{ secrets.DOCKERHUB_TOKEN }}
-          repository: ${{ env.IMAGE_NAME }}
+
+          repository: pandreyn/rss-bot
+          readme-filepath: README.md
+          short-description: "RSS to Telegram bot written in Rust"
+
+
