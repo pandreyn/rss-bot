@@ -4,10 +4,10 @@ FROM rust:${RUST_VERSION}-slim-bookworm AS builder
 WORKDIR /app
 
 # Cache deps
-COPY Cargo.toml Cargo.lock ./
-RUN mkdir -p src && echo "fn main() {}" > src/main.rs
-RUN cargo build --release
-RUN rm -rf src
+# COPY Cargo.toml Cargo.lock ./
+# RUN mkdir -p src && echo "fn main() {}" > src/main.rs
+# RUN cargo build --release
+# RUN rm -rf src
 
 # Build real app
 COPY . .
@@ -20,7 +20,7 @@ RUN apt-get update && apt-get install -y --no-install-recommends ca-certificates
 WORKDIR /app
 COPY --from=builder /app/target/release/rss-bot /app/rss-bot
 
-ENV STATE_FILE=/app/state.json \
-    DEDUP_LIMIT=200 \
-    POLL_EVERY_MINUTES=5
+#ENV STATE_FILE=/app/state.json \
+#    DEDUP_LIMIT=200 \
+#    POLL_EVERY_MINUTES=5
 ENTRYPOINT ["/app/rss-bot"]
