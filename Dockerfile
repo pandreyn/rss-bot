@@ -16,10 +16,10 @@ WORKDIR /app
 
 # Copy the source and build
 COPY . .
-RUN cargo build --release --target x86_64-unknown-linux-musl
+RUN cargo build --release 
 
 # Strip symbols to reduce binary size (best-effort)
-RUN strip target/x86_64-unknown-linux-musl/release/rss-bot || true
+RUN strip target/release/rss-bot || true
 
 # ---- Runtime stage ----
 FROM alpine:3.20
@@ -28,7 +28,7 @@ FROM alpine:3.20
 RUN apk add --no-cache ca-certificates libc6-compat
 
 WORKDIR /app
-COPY --from=builder /app/target/x86_64-unknown-linux-musl/release/rss-bot /app/rss-bot
+COPY --from=builder /app/target/release/rss-bot /app/rss-bot
 
 # Run as non-root
 RUN adduser -D -H -u 10001 appuser
