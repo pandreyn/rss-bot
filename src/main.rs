@@ -344,6 +344,9 @@ async fn run_once(
     Ok(())
 }
 
+#[cfg(test)]
+mod tests;
+
 /// ------------------------- Main -------------------------
 #[tokio::main]
 async fn main() -> Result<()> {
@@ -362,6 +365,24 @@ async fn main() -> Result<()> {
         error!("Config error: {:?}", e);
         e
     })?;
+
+    // Print full config (mask token) for debugging/visibility
+    let masked_token = if cfg.token.len() > 8 {
+        format!("{}...{}", &cfg.token[..4], &cfg.token[cfg.token.len()-4..])
+    } else {
+        "<redacted>".to_string()
+    };
+
+    info!(
+        "CONFIG: token={} chat_id={} feeds={:?} dedup_limit={} poll_every_minutes={} state_file={}",
+        masked_token,
+        cfg.chat_id,
+        cfg.feeds.iter().map(|u| u.as_str()).collect::<Vec<_>>(),
+        cfg.dedup_limit,
+        cfg.poll_every_minutes,
+        cfg.state_file.display()
+    );
+
     info!(
         feeds = cfg.feeds.len(),
         dedup_limit = cfg.dedup_limit,
