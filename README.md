@@ -1,6 +1,6 @@
 # RSS-to-Telegram Bot
 
-![Build & Push to Docker Hub](https://github.com/pandreyn/rss-bot/actions/workflows/docker-publish.yml/badge.svg) ![Docker Pulls](https://img.shields.io/docker/pulls/pandreyn/rss-bot)
+![GitHub Actions Workflow Status](https://img.shields.io/github/actions/workflow/status/pandreyn/rss-bot/docker-publish.yml?label=Docker%20build%20and%20push) ![Docker Pulls](https://img.shields.io/docker/pulls/pandreyn/rss-bot) ![Docker Image Size](https://img.shields.io/docker/image-size/pandreyn/rss-bot?label=Docker%20image%20size)
 
 ## Description
 
