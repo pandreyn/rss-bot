@@ -4,6 +4,11 @@ on:
   pull_request:
     types: [closed]   # fires when a PR is closed (either merged or just closed)
     branches: [ "main" ]          # PR target branch
+    paths:
+      - "Dockerfile"
+      - "src/**"
+      - "Cargo.*"
+      - "docker-compose.yml"
 
 jobs:
   build-and-push:
