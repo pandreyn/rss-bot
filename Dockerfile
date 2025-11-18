@@ -23,7 +23,6 @@ RUN --mount=type=cache,target=/usr/local/cargo/registry \
 COPY . .
 RUN --mount=type=cache,target=/usr/local/cargo/registry \
     --mount=type=cache,target=/app/target \
-    #cargo build --release --target-dir /app/target 
     cargo build --release \
     && strip target/release/rss-bot \
     && mkdir -p /app/out && cp -a /app/target/release/rss-bot /app/out/rss-bot
@@ -32,7 +31,7 @@ RUN --mount=type=cache,target=/usr/local/cargo/registry \
 FROM alpine:3.20
 
 # TLS certs for HTTPS. libc6-compat helps in some edge cases with deps.
-#RUN apk add --no-cache ca-certificates libc6-compat
+RUN apk add --no-cache ca-certificates libc6-compat
 
 WORKDIR /app
 COPY --from=builder /app/out/rss-bot /app/rss-bot
