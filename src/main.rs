@@ -6,8 +6,7 @@ use serde::{Deserialize, Serialize};
 use sha1::{Digest, Sha1};
 use std::{
     collections::{HashMap, VecDeque},
-    env,
-    fs,
+    env, fs,
     io::Cursor,
     path::{Path, PathBuf},
 };
@@ -17,7 +16,6 @@ use tracing::{debug, error, info, warn};
 use tracing_subscriber::{fmt, EnvFilter};
 
 /// ------------------------- Entry utilities -------------------------
-
 fn entry_id(entry: &Entry) -> String {
     if let Some(id) = (!entry.id.is_empty()).then(|| entry.id.clone()) {
         return format!("guid:{id}");
@@ -84,15 +82,15 @@ fn entry_link(entry: &Entry) -> String {
     {
         return href;
     }
-    // Otherwise, first link if present
-    match entry.links.get(0).and_then(|l| Some(l.href.clone())) {
-        Some(href) => href,
-        None => String::new(),
-    }
+
+    entry
+        .links
+        .first()
+        .map(|l| l.href.clone())
+        .unwrap_or_default()
 }
 
 /// ------------------------- HTTP fetch -------------------------
-
 async fn fetch_feed(client: &Client, url: &Url) -> Result<Option<Feed>> {
     let url_str = url.as_str();
     let resp = match client.get(url.clone()).send().await {
@@ -114,8 +112,7 @@ async fn fetch_feed(client: &Client, url: &Url) -> Result<Option<Feed>> {
     }
     let bytes = resp.bytes().await?;
     let cursor = Cursor::new(bytes);
-    let feed =
-        parser::parse(cursor).with_context(|| format!("parse feed {:?}", url_str))?;
+    let feed = parser::parse(cursor).with_context(|| format!("parse feed {:?}", url_str))?;
     Ok(Some(feed))
 }
 
@@ -139,13 +136,15 @@ impl State {
     }
 
     fn ensure_feed(&mut self, url: &Url) {
-        self.seen_per_feed.entry(url.as_str().to_string()).or_default();
+        self.seen_per_feed
+            .entry(url.as_str().to_string())
+            .or_default();
     }
 
     fn seen(&self, url: &Url, id: &str) -> bool {
         self.seen_per_feed
             .get(url.as_str())
-            .map_or(false, |dq| dq.contains(&id.to_string()))
+            .is_some_and(|dq| dq.contains(&id.to_string()))
     }
 
     fn mark_sent(&mut self, url: &Url, id: String, dedup_limit: usize) {
@@ -173,9 +172,8 @@ fn save_state_atomic(path: &Path, state: &State) -> Result<()> {
     let tmp = path.with_extension("tmp");
     let json = serde_json::to_vec_pretty(state).context("serialize state JSON")?;
     fs::write(&tmp, json).with_context(|| format!("write {}", tmp.display()))?;
-    fs::rename(&tmp, path).with_context(|| {
-        format!("atomic rename {} -> {}", tmp.display(), path.display())
-    })?;
+    fs::rename(&tmp, path)
+        .with_context(|| format!("atomic rename {} -> {}", tmp.display(), path.display()))?;
     Ok(())
 }
 
@@ -221,7 +219,11 @@ impl Config {
                 .with_context(|| format!("Invalid URL in RSSBOT_FEEDS: {:?}", cleaned))?;
             match url.scheme() {
                 "http" | "https" => {}
-                other => anyhow::bail!("Unsupported URL scheme {:?} in RSSBOT_FEEDS: {:?}", other, cleaned),
+                other => anyhow::bail!(
+                    "Unsupported URL scheme {:?} in RSSBOT_FEEDS: {:?}",
+                    other,
+                    cleaned
+                ),
             }
             feeds.push(url);
         }
@@ -255,7 +257,6 @@ impl Config {
 }
 
 /// ------------------------- Feed processing -------------------------
-
 async fn process_feed(
     client: &Client,
     bot: &teloxide::Bot,
@@ -355,7 +356,11 @@ async fn main() -> Result<()> {
     let json = env::var("RSSBOT_RUST_LOG_FORMAT").ok().as_deref() == Some("json");
     let filter = EnvFilter::try_from_default_env().unwrap_or_else(|_| EnvFilter::new("info"));
     if json {
-        fmt().with_env_filter(filter).json().with_target(false).init();
+        fmt()
+            .with_env_filter(filter)
+            .json()
+            .with_target(false)
+            .init();
     } else {
         fmt().with_env_filter(filter).with_target(false).init();
     }
@@ -368,7 +373,11 @@ async fn main() -> Result<()> {
 
     // Print full config (mask token) for debugging/visibility
     let masked_token = if cfg.token.len() > 8 {
-        format!("{}...{}", &cfg.token[..4], &cfg.token[cfg.token.len()-4..])
+        format!(
+            "{}...{}",
+            &cfg.token[..4],
+            &cfg.token[cfg.token.len() - 4..]
+        )
     } else {
         "<redacted>".to_string()
     };
