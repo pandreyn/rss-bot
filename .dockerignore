@@ -1,0 +1,17 @@
+target
+.git
+.gitignore
+Dockerfile*
+docker-compose*
+node_modules
+**/*.log
+tmp
+dist
+build
+.env
+.env.*
+*.iml
+.vscode
+.idea
+# If you vendor dependencies:
+vendor

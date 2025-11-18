@@ -2,33 +2,40 @@
 ARG RUST_VERSION=1.84
 FROM rust:${RUST_VERSION}-alpine AS builder
 
-# Install build tools and MUSL toolchain
 RUN apk add --no-cache build-base musl-dev pkgconfig
-
-# If you depend on OpenSSL, you can add it here, but for MUSL static builds
-# prefer rustls in your Cargo features. Uncomment only if truly needed:
-# RUN apk add --no-cache openssl-dev
-
-# Prepare MUSL target
 RUN rustup target add x86_64-unknown-linux-musl
 
 WORKDIR /app
 
-# Copy the source and build
-COPY . .
-RUN cargo build --release 
+# Cache dependencies
+COPY Cargo.toml Cargo.lock ./
 
-# Strip symbols to reduce binary size (best-effort)
-RUN strip target/release/rss-bot || true
+# Create a minimal target so Cargo doesn't complain during `cargo fetch`
+# This preserves dependency caching without requiring your full source yet.
+RUN mkdir -p src && \
+    printf 'fn main() {}\n' > src/main.rs
+
+RUN --mount=type=cache,target=/usr/local/cargo/registry \
+    --mount=type=cache,target=/app/target \
+    cargo fetch
+
+# Now bring in the real source and build
+COPY . .
+RUN --mount=type=cache,target=/usr/local/cargo/registry \
+    --mount=type=cache,target=/app/target \
+    #cargo build --release --target-dir /app/target 
+    cargo build --release \
+    && strip target/release/rss-bot \
+    && mkdir -p /app/out && cp -a /app/target/release/rss-bot /app/out/rss-bot
 
 # ---- Runtime stage ----
 FROM alpine:3.20
 
 # TLS certs for HTTPS. libc6-compat helps in some edge cases with deps.
-RUN apk add --no-cache ca-certificates libc6-compat
+#RUN apk add --no-cache ca-certificates libc6-compat
 
 WORKDIR /app
-COPY --from=builder /app/target/release/rss-bot /app/rss-bot
+COPY --from=builder /app/out/rss-bot /app/rss-bot
 
 # Run as non-root
 RUN adduser -D -H -u 10001 appuser
